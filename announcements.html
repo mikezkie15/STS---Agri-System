@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements - Barangay Agri-Market</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fas fa-seedling me-2"></i>Agri-Market
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="products.html">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="requests.html">Requests</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="announcements.html">Announcements</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="mb-4">Barangay Announcements</h1>
+        <p class="text-muted mb-4">Stay updated with the latest news and updates from your barangay</p>
+
+        <!-- Filter Options -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="importantOnly">
+              <label class="form-check-label" for="importantOnly">
+                Show important announcements only
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Announcements List -->
+        <div id="announcementsList">
+          <!-- Announcements will be loaded here -->
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="text-center mt-4" id="loadingSpinner" style="display: none;">
+          <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <!-- No Announcements Message -->
+        <div class="text-center mt-5" id="noAnnouncementsMessage" style="display: none;">
+          <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">No announcements available</h5>
+          <p class="text-muted">Check back later for updates</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Barangay Agri-Market</h5>
+          <p>Connecting farmers and buyers in our community.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p>&copy; 2024 Barangay Agri-Market. All rights reserved.</p>
+          <p>Contact: +63 XXX XXX XXXX</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    let allAnnouncements = [];
+    let currentUser = null;
+
+    // Load announcements on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAuthAndLoadAnnouncements();
+
+      // Add event listener for filter
+      document.getElementById('importantOnly').addEventListener('change', filterAnnouncements);
+    });
+
+    // Check authentication and load announcements
+    async function checkAuthAndLoadAnnouncements() {
+      const token = localStorage.getItem('auth_token');
+      const userData = localStorage.getItem('user_data');
+
+      if (token && userData) {
+        try {
+          currentUser = JSON.parse(userData);
+          // Validate token with server
+          const response = await fetch('api/auth.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ action: 'validate', token: token })
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            currentUser = data.user;
+            updateNavigation();
+          } else {
+            // Token is invalid, clear storage
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            currentUser = null;
+          }
+        } catch (error) {
+          console.error('Error validating token:', error);
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+          currentUser = null;
+        }
+      }
+
+      // Load announcements regardless of auth status
+      loadAnnouncements();
+    }
+
+    // Update navigation based on user status
+    function updateNavigation() {
+      const nav = document.querySelector("#navbarNav ul");
+      if (!nav || !currentUser) return;
+
+      // Remove login link and add user-specific links
+      const loginLink = nav.querySelector('a[href="login.html"]');
+      if (loginLink) {
+        loginLink.parentElement.remove();
+      }
+
+      // Add user menu
+      const userMenu = document.createElement("li");
+      userMenu.className = "nav-item dropdown";
+      userMenu.innerHTML = `
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+          <i class="fas fa-user me-1"></i>${currentUser.name}
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="dashboard.html">Dashboard</a></li>
+          <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+        </ul>
+      `;
+      nav.appendChild(userMenu);
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+      currentUser = null;
+      location.reload();
+    }
+
+    // Load announcements from API
+    async function loadAnnouncements() {
+      showLoading();
+
+      try {
+        const response = await fetch('api/announcements.php');
+        const data = await response.json();
+
+        if (data.success) {
+          allAnnouncements = data.data.announcements;
+          displayAnnouncements(allAnnouncements);
+        } else {
+          showError('Failed to load announcements', document.getElementById('announcementsList'));
+        }
+      } catch (error) {
+        console.error('Error loading announcements:', error);
+        showError('Network error. Please check your connection.', document.getElementById('announcementsList'));
+      }
+    }
+
+    // Display announcements
+    function displayAnnouncements(announcements) {
+      const container = document.getElementById('announcementsList');
+      const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
+
+      if (announcements.length === 0) {
+        container.innerHTML = '';
+        noAnnouncementsMessage.style.display = 'block';
+        return;
+      }
+
+      noAnnouncementsMessage.style.display = 'none';
+
+      container.innerHTML = announcements.map(announcement => `
+                <div class="card mb-4 ${announcement.is_important ? 'border-warning' : ''}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title mb-0 ${announcement.is_important ? 'text-warning' : 'text-success'}">
+                                ${announcement.is_important ? '<i class="fas fa-exclamation-triangle me-2"></i>' : ''}
+                                ${announcement.title}
+                            </h5>
+                            <small class="text-muted">
+                                ${formatDate(announcement.created_at)}
+                            </small>
+                        </div>
+                        <p class="card-text">${announcement.content}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>
+                                Posted by ${announcement.admin_name}
+                            </small>
+                            ${announcement.is_important ? '<span class="badge bg-warning text-dark">Important</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    // Filter announcements
+    function filterAnnouncements() {
+      const importantOnly = document.getElementById('importantOnly').checked;
+
+      let filteredAnnouncements = allAnnouncements;
+
+      if (importantOnly) {
+        filteredAnnouncements = filteredAnnouncements.filter(announcement => announcement.is_important);
+      }
+
+      displayAnnouncements(filteredAnnouncements);
+    }
+
+    // Show loading spinner
+    function showLoading() {
+      document.getElementById('loadingSpinner').style.display = 'block';
+      document.getElementById('announcementsList').innerHTML = '';
+      document.getElementById('noAnnouncementsMessage').style.display = 'none';
+    }
+
+    // Format date for display
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  </script>
+</body>
+
+</html>
