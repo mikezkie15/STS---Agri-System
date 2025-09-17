@@ -149,6 +149,7 @@
       }
 
       // Load announcements regardless of auth status
+      console.log('Loading announcements...');
       loadAnnouncements();
     }
 
@@ -196,20 +197,24 @@
       try {
         console.log('Fetching announcements from API...');
         const response = await fetch('api/announcements.php');
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
         const data = await response.json();
         console.log('API response:', data);
 
         if (data.success) {
           allAnnouncements = data.data.announcements;
           console.log('Announcements loaded:', allAnnouncements);
+          console.log('Number of announcements:', allAnnouncements.length);
           displayAnnouncements(allAnnouncements);
         } else {
           console.error('API returned error:', data.message);
-          showError('Failed to load announcements', document.getElementById('announcementsList'));
+          showError('Failed to load announcements: ' + data.message, document.getElementById('announcementsList'));
         }
       } catch (error) {
         console.error('Error loading announcements:', error);
-        showError('Network error. Please check your connection.', document.getElementById('announcementsList'));
+        showError('Network error. Please check your connection: ' + error.message, document.getElementById('announcementsList'));
       }
     }
 
