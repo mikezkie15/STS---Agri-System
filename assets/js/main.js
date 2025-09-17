@@ -347,24 +347,3 @@ function sortProducts(products, sortBy) {
       return products;
   }
 }
-
-// Export functions for use in other scripts
-window.AgriMarket = {
-  loadRecentProducts,
-  loadRecentAnnouncements,
-  checkAuthStatus,
-  validateToken,
-  updateNavigation,
-  logout,
-  viewProduct,
-  formatDate,
-  showLoading,
-  showError,
-  showSuccess,
-  validateForm,
-  clearFormValidation,
-  handleFormSubmit,
-  searchProducts,
-  filterProductsByCategory,
-  sortProducts,
-};

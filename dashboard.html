@@ -366,6 +366,53 @@
       loadRecentAnnouncements();
     }
 
+    // Display buyer's requests
+    function displayMyRequests(requests) {
+      const container = document.getElementById('myRequests');
+
+      if (requests.length === 0) {
+        container.innerHTML = '<p class="text-muted">No requests posted yet. <a href="#" onclick="addRequest()">Post your first request</a></p>';
+        return;
+      }
+
+      container.innerHTML = requests.map(request => `
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="mb-1">${request.product_name}</h6>
+                        <p class="text-muted mb-1">${request.quantity} ${request.unit}</p>
+                        <small class="text-success">Status: ${request.status}</small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editRequest(${request.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      `).join('');
+    }
+
+    // Update buyer stats
+    function updateBuyerStats(requests) {
+      const totalRequests = requests.length;
+      const activeRequests = requests.filter(r => r.status === 'active').length;
+
+      document.getElementById('totalRequests').textContent = totalRequests;
+      document.getElementById('activeRequests').textContent = activeRequests;
+    }
+
+    // Load recommended products
+    function loadRecommendedProducts() {
+      const container = document.getElementById('recommendedProducts');
+      container.innerHTML = '<p class="text-muted">No recommended products at the moment.</p>';
+    }
+
     // Load admin data
     async function loadAdminData() {
       // Load system stats

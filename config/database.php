@@ -103,10 +103,21 @@ function verifyPassword($password, $hash)
 function checkAuth()
 {
     $token = '';
+
+    // Check HTTP_AUTHORIZATION first
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
         $token = str_replace('Bearer ', '', $auth_header);
-    } else {
+    }
+    // Check getallheaders() as fallback (Apache sometimes doesn't set HTTP_AUTHORIZATION)
+    elseif (function_exists('getallheaders')) {
+        $headers = getallheaders();
+        if (isset($headers['Authorization'])) {
+            $token = str_replace('Bearer ', '', $headers['Authorization']);
+        }
+    }
+    // Check JSON input as last resort
+    else {
         $input = json_decode(file_get_contents('php://input'), true);
         if (isset($input['token'])) {
             $token = $input['token'];
