@@ -102,21 +102,28 @@ function verifyPassword($password, $hash)
 // Helper function to check if user is authenticated
 function checkAuth()
 {
-    if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        return false;
+    $token = '';
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
+        $token = str_replace('Bearer ', '', $auth_header);
+    } else {
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (isset($input['token'])) {
+            $token = $input['token'];
+        }
     }
-
-    $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
-    $token = str_replace('Bearer ', '', $auth_header);
 
     if (empty($token)) {
         return false;
     }
 
-    // In a real application, you would validate the token against a database
-    // For this demo, w e'll use a simple approach
     $db = getDB();
-    $stmt = $db->prepare("SELECT * FROM users WHERE id = ? AND is_active = 1");
+    $stmt = $db->prepare("
+        SELECT u.*
+        FROM users u
+        INNER JOIN user_tokens ut ON u.id = ut.user_id
+        WHERE ut.token = ? AND ut.expires_at > NOW() AND u.is_active = 1
+    ");
     $stmt->execute([$token]);
     $user = $stmt->fetch();
 
@@ -142,5 +149,7 @@ function setCORSHeaders()
     }
 }
 
-// Set CORS headers
-setCORSHeaders();
+// Set CORS headers only when running through web server
+if (php_sapi_name() !== 'cli') {
+    setCORSHeaders();
+}

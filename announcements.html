@@ -190,16 +190,21 @@
 
     // Load announcements from API
     async function loadAnnouncements() {
+      console.log('loadAnnouncements called');
       showLoading();
 
       try {
+        console.log('Fetching announcements from API...');
         const response = await fetch('api/announcements.php');
         const data = await response.json();
+        console.log('API response:', data);
 
         if (data.success) {
           allAnnouncements = data.data.announcements;
+          console.log('Announcements loaded:', allAnnouncements);
           displayAnnouncements(allAnnouncements);
         } else {
+          console.error('API returned error:', data.message);
           showError('Failed to load announcements', document.getElementById('announcementsList'));
         }
       } catch (error) {
@@ -210,15 +215,18 @@
 
     // Display announcements
     function displayAnnouncements(announcements) {
+      console.log('displayAnnouncements called with:', announcements);
       const container = document.getElementById('announcementsList');
       const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
 
       if (announcements.length === 0) {
+        console.log('No announcements to display');
         container.innerHTML = '';
         noAnnouncementsMessage.style.display = 'block';
         return;
       }
 
+      console.log('Displaying', announcements.length, 'announcements');
       noAnnouncementsMessage.style.display = 'none';
 
       container.innerHTML = announcements.map(announcement => `
@@ -276,6 +284,11 @@
         hour: '2-digit',
         minute: '2-digit'
       });
+    }
+
+    // Show error message
+    function showError(message, element) {
+      element.innerHTML = `<div class="alert alert-danger" role="alert">${message}</div>`;
     }
   </script>
 </body>

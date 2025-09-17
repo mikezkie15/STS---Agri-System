@@ -25,6 +25,19 @@ function handleGetRequests()
   $limit = $_GET['limit'] ?? 20;
   $offset = $_GET['offset'] ?? 0;
   $buyer_id = $_GET['buyer_id'] ?? '';
+  $count_only = $_GET['count_only'] ?? false;
+
+  if ($count_only) {
+    $query = "SELECT COUNT(*) as count FROM buyer_requests WHERE is_active = 1";
+    $params = [];
+
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+    $result = $stmt->fetch();
+
+    sendResponse(true, 'Request count retrieved', ['data' => ['count' => $result['count']]]);
+    return;
+  }
 
   // Build query
   $query = "

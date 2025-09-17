@@ -27,6 +27,19 @@ function handleGetProducts()
   $category = $_GET['category'] ?? '';
   $search = $_GET['search'] ?? '';
   $seller_id = $_GET['seller_id'] ?? '';
+  $count_only = $_GET['count_only'] ?? false;
+
+  if ($count_only) {
+    $query = "SELECT COUNT(*) as count FROM products WHERE is_available = 1";
+    $params = [];
+
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+    $result = $stmt->fetch();
+
+    sendResponse(true, 'Product count retrieved', ['data' => ['count' => $result['count']]]);
+    return;
+  }
 
   // Build query
   $query = "

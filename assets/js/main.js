@@ -68,7 +68,7 @@ function displayRecentProducts(products) {
                                 ${product.seller_name}
                                 ${
                                   product.is_verified
-                                    ? '<span class="verified-badge ms-1">✓</span>'
+                                    ? '<span class="badge bg-success ms-1"><i class="fas fa-check-circle me-1"></i>Verified</span>'
                                     : ""
                                 }
                             </small>
@@ -94,7 +94,7 @@ async function loadRecentAnnouncements() {
     const data = await response.json();
 
     if (data.success) {
-      announcements = data.announcements;
+      announcements = data.data.announcements;
       displayRecentAnnouncements(announcements);
     }
   } catch (error) {

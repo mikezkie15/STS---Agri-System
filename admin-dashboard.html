@@ -32,7 +32,7 @@
             <a class="nav-link" href="requests.html">Requests</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="announcements.html">Announcements</a>
+            <a class="nav-link" href="manage-announcements.html">Announcements</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -198,6 +198,8 @@
     </div>
   </div>
 
+
+
   <!-- Footer -->
   <footer class="bg-dark text-light py-4 mt-5">
     <div class="container">
@@ -249,29 +251,31 @@
     // Load admin statistics
     async function loadAdminStats() {
       try {
+        const headers = { 'Authorization': 'Bearer ' + localStorage.getItem('auth_token') };
+
         // Load users count
-        const usersResponse = await fetch('api/admin/users.php?count_only=true');
+        const usersResponse = await fetch('api/admin/users.php?count_only=true', { headers });
         const usersData = await usersResponse.json();
         if (usersData.success) {
           document.getElementById('totalUsers').textContent = usersData.data.count;
         }
 
         // Load products count
-        const productsResponse = await fetch('api/products.php?count_only=true');
+        const productsResponse = await fetch('api/products.php?count_only=true', { headers });
         const productsData = await productsResponse.json();
         if (productsData.success) {
           document.getElementById('totalProducts').textContent = productsData.data.count;
         }
 
         // Load requests count
-        const requestsResponse = await fetch('api/requests.php?count_only=true');
+        const requestsResponse = await fetch('api/requests.php?count_only=true', { headers });
         const requestsData = await requestsResponse.json();
         if (requestsData.success) {
           document.getElementById('totalRequests').textContent = requestsData.data.count;
         }
 
         // Load announcements count
-        const announcementsResponse = await fetch('api/announcements.php?count_only=true');
+        const announcementsResponse = await fetch('api/announcements.php?count_only=true', { headers });
         const announcementsData = await announcementsResponse.json();
         if (announcementsData.success) {
           document.getElementById('totalAnnouncements').textContent = announcementsData.data.count;
@@ -303,7 +307,7 @@
 
     // Admin action functions
     function viewUsers() {
-      alert('User management page will be implemented');
+      window.location.href = 'manage-users.html';
     }
 
     function verifySellers() {
@@ -311,11 +315,11 @@
     }
 
     function viewAnnouncements() {
-      window.location.href = 'announcements.html';
+      window.location.href = 'manage-announcements.html';
     }
 
     function addAnnouncement() {
-      alert('Add announcement modal will be implemented');
+      window.location.href = 'manage-announcements.html';
     }
 
     function viewReports() {

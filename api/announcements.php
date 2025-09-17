@@ -25,6 +25,19 @@ function handleGetAnnouncements()
   $limit = $_GET['limit'] ?? 20;
   $offset = $_GET['offset'] ?? 0;
   $important_only = $_GET['important'] ?? false;
+  $count_only = $_GET['count_only'] ?? false;
+
+  if ($count_only) {
+    $query = "SELECT COUNT(*) as count FROM announcements";
+    $params = [];
+
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+    $result = $stmt->fetch();
+
+    sendResponse(true, 'Announcement count retrieved', ['data' => ['count' => $result['count']]]);
+    return;
+  }
 
   // Build query
   $query = "
@@ -98,7 +111,7 @@ function handleCreateAnnouncement($data)
       $user['id'],
       sanitizeInput($data['title']),
       sanitizeInput($data['content']),
-      $data['is_important'] ? 1 : 0
+      isset($data['is_important']) ? ($data['is_important'] ? 1 : 0) : 0
     ]);
 
     $announcement_id = $db->lastInsertId();
