@@ -49,12 +49,91 @@
   <div class="container my-5">
     <div class="row">
       <div class="col-12">
-        <h1 class="mb-4">Manage Users</h1>
-        <p class="text-muted mb-4">Manage user accounts, permissions, and barangay verification.</p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="mb-2">Manage Users</h1>
+            <p class="text-muted mb-0">Manage user accounts, permissions, and barangay verification.</p>
+          </div>
+          <div class="text-end">
+            <button class="btn btn-outline-primary" onclick="refreshUsers()">
+              <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4" id="statsCards">
+          <div class="col-md-3">
+            <div class="card bg-primary text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h4 id="totalUsersCount">-</h4>
+                    <p class="mb-0">Total Users</p>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="fas fa-users fa-2x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-success text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h4 id="verifiedUsersCount">-</h4>
+                    <p class="mb-0">Verified Sellers</p>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-warning text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h4 id="pendingVerificationCount">-</h4>
+                    <p class="mb-0">Pending Verification</p>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="fas fa-clock fa-2x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-info text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h4 id="activeUsersCount">-</h4>
+                    <p class="mb-0">Active Users</p>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="fas fa-user-check fa-2x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Filter Options -->
         <div class="row mb-4">
-          <div class="col-md-4">
+          <div class="col-md-3">
+            <label for="searchInput" class="form-label">Search Users</label>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by name or email..."
+              onkeyup="handleSearch()">
+          </div>
+          <div class="col-md-3">
+            <label for="userTypeFilter" class="form-label">User Type</label>
             <select class="form-select" id="userTypeFilter" onchange="loadUsers(1)">
               <option value="">All User Types</option>
               <option value="farmer">Farmers</option>
@@ -62,11 +141,20 @@
               <option value="admin">Admins</option>
             </select>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
+            <label for="verificationFilter" class="form-label">Verification Status</label>
             <select class="form-select" id="verificationFilter" onchange="loadUsers(1)">
               <option value="">All Verification Status</option>
               <option value="verified">Verified Only</option>
               <option value="unverified">Unverified Only</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="statusFilter" class="form-label">Account Status</label>
+            <select class="form-select" id="statusFilter" onchange="loadUsers(1)">
+              <option value="">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
             </select>
           </div>
         </div>
@@ -132,11 +220,62 @@
   <script>
     let currentPage = 1;
     const limit = 10;
+    let searchTimeout;
 
     document.addEventListener('DOMContentLoaded', function () {
       checkAdminAuth();
+      loadUserStats();
       loadUsers();
     });
+
+    function handleSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        loadUsers(1);
+      }, 500);
+    }
+
+    async function loadUserStats() {
+      try {
+        const headers = { 'Authorization': 'Bearer ' + localStorage.getItem('auth_token') };
+
+        // Load total users
+        const totalResponse = await fetch('api/admin/users.php?count_only=true', { headers });
+        const totalData = await totalResponse.json();
+        if (totalData.success) {
+          document.getElementById('totalUsersCount').textContent = totalData.data.data.count;
+        }
+
+        // Load verified users
+        const verifiedResponse = await fetch('api/admin/users.php?count_only=true&verification=verified', { headers });
+        const verifiedData = await verifiedResponse.json();
+        if (verifiedData.success) {
+          document.getElementById('verifiedUsersCount').textContent = verifiedData.data.data.count;
+        }
+
+        // Load pending verification
+        const pendingResponse = await fetch('api/admin/users.php?count_only=true&user_type=farmer&verification=unverified', { headers });
+        const pendingData = await pendingResponse.json();
+        if (pendingData.success) {
+          document.getElementById('pendingVerificationCount').textContent = pendingData.data.data.count;
+        }
+
+        // Load active users
+        const activeResponse = await fetch('api/admin/users.php?count_only=true&status=active', { headers });
+        const activeData = await activeResponse.json();
+        if (activeData.success) {
+          document.getElementById('activeUsersCount').textContent = activeData.data.data.count;
+        }
+
+      } catch (error) {
+        console.error('Error loading user stats:', error);
+      }
+    }
+
+    function refreshUsers() {
+      loadUserStats();
+      loadUsers(currentPage);
+    }
 
     function checkAdminAuth() {
       const token = localStorage.getItem('auth_token');
@@ -167,11 +306,15 @@
       // Get filter values
       const userType = document.getElementById('userTypeFilter').value;
       const verificationStatus = document.getElementById('verificationFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+      const searchTerm = document.getElementById('searchInput').value;
 
       // Build query parameters
       let url = `api/admin/users.php?limit=${limit}&offset=${offset}`;
       if (userType) url += `&user_type=${userType}`;
       if (verificationStatus) url += `&verification=${verificationStatus}`;
+      if (statusFilter) url += `&status=${statusFilter}`;
+      if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
 
       try {
         const response = await fetch(url, {
@@ -182,8 +325,8 @@
         const result = await response.json();
 
         if (result.success) {
-          renderUsersTable(result.data.users);
-          renderPagination(result.data.total);
+          renderUsersTable(result.data.data.users);
+          renderPagination(result.data.data.total);
         } else {
           container.innerHTML = '<p class="text-muted">Failed to load users.</p>';
         }
@@ -195,52 +338,105 @@
 
     function renderUsersTable(users) {
       const container = document.getElementById('usersTableContainer');
-      let tableHtml = '<table class="table table-striped"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>User Type</th><th>Verified</th><th>Barangay ID</th><th>Product Type</th><th>Active</th><th>Actions</th></tr></thead><tbody>';
+      let tableHtml = `
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>User Info</th>
+                <th>Contact</th>
+                <th>Type & Status</th>
+                <th>Verification</th>
+                <th>Barangay Details</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>`;
 
       if (users.length === 0) {
-        tableHtml += '<tr><td colspan="9" class="text-center">No users found.</td></tr>';
+        tableHtml += '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-users text-muted me-2"></i>No users found.</td></tr>';
       } else {
         users.forEach(user => {
           const verificationBadge = user.is_verified ?
             '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Verified</span>' :
             '<span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Unverified</span>';
 
+          const statusBadge = user.is_active ?
+            '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Active</span>' :
+            '<span class="badge bg-danger"><i class="fas fa-ban me-1"></i>Inactive</span>';
+
+          const userTypeBadge = user.user_type === 'admin' ? 'bg-danger' :
+            user.user_type === 'farmer' ? 'bg-success' : 'bg-primary';
+
           tableHtml += `
             <tr>
               <td>
-                ${user.name}
-                ${user.is_verified ? '<i class="fas fa-check-circle text-success ms-1" title="Verified Seller"></i>' : ''}
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="fas fa-user-circle fa-2x text-muted"></i>
+                  </div>
+                  <div>
+                    <strong>${user.name}</strong>
+                    ${user.is_verified ? '<i class="fas fa-check-circle text-success ms-1" title="Verified Seller"></i>' : ''}
+                    <br>
+                    <small class="text-muted">ID: ${user.id}</small>
+                  </div>
+                </div>
               </td>
-              <td>${user.email}</td>
-              <td>${user.phone || 'N/A'}</td>
-              <td><span class="badge bg-primary">${user.user_type}</span></td>
-              <td>${verificationBadge}</td>
-              <td>${user.barangay_id || 'N/A'}</td>
-              <td>${user.product_type || 'N/A'}</td>
-              <td>${user.is_active ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-times text-danger"></i>'}</td>
               <td>
-                ${user.user_type === 'farmer' && !user.is_verified ?
-              `<button class="btn btn-sm btn-success me-1" onclick="openVerificationModal(${user.id}, '${user.name}')">
-                    <i class="fas fa-check-circle me-1"></i>Verify
-                  </button>` :
+                <div>
+                  <i class="fas fa-envelope me-1 text-muted"></i> ${user.email}
+                </div>
+                <div>
+                  <i class="fas fa-phone me-1 text-muted"></i> ${user.phone || 'N/A'}
+                </div>
+              </td>
+              <td>
+                <div class="mb-1">
+                  <span class="badge ${userTypeBadge}">${user.user_type.toUpperCase()}</span>
+                </div>
+                <div>
+                  ${statusBadge}
+                </div>
+              </td>
+              <td>
+                ${verificationBadge}
+                ${user.verification_date ? `<br><small class="text-muted">Verified: ${new Date(user.verification_date).toLocaleDateString()}</small>` : ''}
+              </td>
+              <td>
+                <div>
+                  <strong>ID:</strong> ${user.barangay_id || 'N/A'}
+                </div>
+                <div>
+                  <strong>Product:</strong> ${user.product_type || 'N/A'}
+                </div>
+                ${user.verification_notes ? `<div><small class="text-muted">${user.verification_notes}</small></div>` : ''}
+              </td>
+              <td>
+                <div class="btn-group-vertical" role="group">
+                  ${user.user_type === 'farmer' && !user.is_verified ?
+              `<button class="btn btn-sm btn-success mb-1" onclick="openVerificationModal(${user.id}, '${user.name.replace(/'/g, "\\'")}')">
+                      <i class="fas fa-check-circle me-1"></i>Verify
+                    </button>` :
               user.is_verified ?
-                `<button class="btn btn-sm btn-warning me-1" onclick="toggleVerified(${user.id}, ${user.is_verified})">
-                    <i class="fas fa-times-circle me-1"></i>Unverify
-                  </button>` : ''
+                `<button class="btn btn-sm btn-warning mb-1" onclick="toggleVerified(${user.id}, ${user.is_verified})">
+                        <i class="fas fa-times-circle me-1"></i>Unverify
+                      </button>` : ''
             }
-                <button class="btn btn-sm btn-info me-1" onclick="toggleActive(${user.id}, ${user.is_active})">
-                  ${user.is_active ? '<i class="fas fa-ban me-1"></i>Deactivate' : '<i class="fas fa-check me-1"></i>Activate'}
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
-                  <i class="fas fa-trash"></i>
-                </button>
+                  <button class="btn btn-sm btn-info mb-1" onclick="toggleActive(${user.id}, ${user.is_active})">
+                    ${user.is_active ? '<i class="fas fa-ban me-1"></i>Deactivate' : '<i class="fas fa-check me-1"></i>Activate'}
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                    <i class="fas fa-trash me-1"></i>Delete
+                  </button>
+                </div>
               </td>
             </tr>
           `;
         });
       }
 
-      tableHtml += '</tbody></table>';
+      tableHtml += '</tbody></table></div>';
       container.innerHTML = tableHtml;
     }
 
@@ -264,13 +460,14 @@
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
         },
-        body: JSON.stringify({ id, is_verified: !is_verified, token: localStorage.getItem('auth_token') })
+        body: JSON.stringify({ id, is_verified: !is_verified })
       });
 
       const result = await response.json();
 
       if (result.success) {
         alert('User verification status updated successfully');
+        loadUserStats();
         loadUsers(currentPage);
       } else {
         alert('Error updating user verification status: ' + result.message);
@@ -284,13 +481,14 @@
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
         },
-        body: JSON.stringify({ id, is_active: !is_active, token: localStorage.getItem('auth_token') })
+        body: JSON.stringify({ id, is_active: !is_active })
       });
 
       const result = await response.json();
 
       if (result.success) {
         alert('User active status updated successfully');
+        loadUserStats();
         loadUsers(currentPage);
       } else {
         alert('Error updating user active status: ' + result.message);
@@ -302,20 +500,18 @@
         return;
       }
 
-      const response = await fetch(`api/admin/users.php?id=${id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
-          },
-          body: JSON.stringify({ token: localStorage.getItem('auth_token') })
-        });
+      const response = await fetch(`api/admin/users.php?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+        }
+      });
 
       const result = await response.json();
 
       if (result.success) {
         alert('User deleted successfully');
+        loadUserStats();
         loadUsers(currentPage);
       } else {
         alert('Error deleting user: ' + result.message);
@@ -355,8 +551,7 @@
             user_id: userId,
             barangay_id: barangayId,
             product_type: productType,
-            verification_notes: verificationNotes,
-            token: localStorage.getItem('auth_token')
+            verification_notes: verificationNotes
           })
         });
 
@@ -366,6 +561,7 @@
           alert('Seller verified successfully!');
           const modal = bootstrap.Modal.getInstance(document.getElementById('verificationModal'));
           modal.hide();
+          loadUserStats();
           loadUsers(currentPage);
         } else {
           alert('Error verifying seller: ' + result.message);

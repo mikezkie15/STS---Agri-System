@@ -257,28 +257,28 @@
         const usersResponse = await fetch('api/admin/users.php?count_only=true', { headers });
         const usersData = await usersResponse.json();
         if (usersData.success) {
-          document.getElementById('totalUsers').textContent = usersData.data.count;
+          document.getElementById('totalUsers').textContent = usersData.data.data.count;
         }
 
         // Load products count
         const productsResponse = await fetch('api/products.php?count_only=true', { headers });
         const productsData = await productsResponse.json();
         if (productsData.success) {
-          document.getElementById('totalProducts').textContent = productsData.data.count;
+          document.getElementById('totalProducts').textContent = productsData.data.data.count;
         }
 
         // Load requests count
         const requestsResponse = await fetch('api/requests.php?count_only=true', { headers });
         const requestsData = await requestsResponse.json();
         if (requestsData.success) {
-          document.getElementById('totalRequests').textContent = requestsData.data.count;
+          document.getElementById('totalRequests').textContent = requestsData.data.data.count;
         }
 
         // Load announcements count
         const announcementsResponse = await fetch('api/announcements.php?count_only=true', { headers });
         const announcementsData = await announcementsResponse.json();
         if (announcementsData.success) {
-          document.getElementById('totalAnnouncements').textContent = announcementsData.data.count;
+          document.getElementById('totalAnnouncements').textContent = announcementsData.data.data.count;
         }
 
       } catch (error) {

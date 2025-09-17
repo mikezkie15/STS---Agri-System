@@ -42,10 +42,12 @@ function handleGetUsers()
   $offset = $_GET['offset'] ?? 0;
   $user_type = $_GET['user_type'] ?? '';
   $verification = $_GET['verification'] ?? '';
+  $status = $_GET['status'] ?? '';
+  $search = $_GET['search'] ?? '';
   $count_only = $_GET['count_only'] ?? false;
 
   if ($count_only) {
-    $query = "SELECT COUNT(*) as count FROM users WHERE is_active = 1";
+    $query = "SELECT COUNT(*) as count FROM users WHERE 1=1";
     $params = [];
 
     if (!empty($user_type)) {
@@ -59,6 +61,20 @@ function handleGetUsers()
       } elseif ($verification === 'unverified') {
         $query .= " AND is_verified = 0";
       }
+    }
+
+    if (!empty($status)) {
+      if ($status === 'active') {
+        $query .= " AND is_active = 1";
+      } elseif ($status === 'inactive') {
+        $query .= " AND is_active = 0";
+      }
+    }
+
+    if (!empty($search)) {
+      $query .= " AND (name LIKE ? OR email LIKE ?)";
+      $params[] = "%$search%";
+      $params[] = "%$search%";
     }
 
     $stmt = $db->prepare($query);
@@ -94,7 +110,21 @@ function handleGetUsers()
     }
   }
 
-  $query .= " ORDER BY created_at DESC LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+  if (!empty($status)) {
+    if ($status === 'active') {
+      $query .= " AND u.is_active = 1";
+    } elseif ($status === 'inactive') {
+      $query .= " AND u.is_active = 0";
+    }
+  }
+
+  if (!empty($search)) {
+    $query .= " AND (u.name LIKE ? OR u.email LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+  }
+
+  $query .= " ORDER BY u.created_at DESC LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
   $stmt = $db->prepare($query);
   $stmt->execute($params);
@@ -115,6 +145,20 @@ function handleGetUsers()
     } elseif ($verification === 'unverified') {
       $count_query .= " AND u.is_verified = 0";
     }
+  }
+
+  if (!empty($status)) {
+    if ($status === 'active') {
+      $count_query .= " AND u.is_active = 1";
+    } elseif ($status === 'inactive') {
+      $count_query .= " AND u.is_active = 0";
+    }
+  }
+
+  if (!empty($search)) {
+    $count_query .= " AND (u.name LIKE ? OR u.email LIKE ?)";
+    $count_params[] = "%$search%";
+    $count_params[] = "%$search%";
   }
 
   $stmt = $db->prepare($count_query);
