@@ -83,6 +83,7 @@ function handleGetRequests()
 
 function handleCreateRequest($data)
 {
+  file_put_contents('debug_requests.log', 'handleCreateRequest called');
   // Check authentication
   $user = getCurrentUser();
   if (!$user) {

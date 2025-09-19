@@ -141,9 +141,12 @@ function handleCreateProduct($data)
     sendResponse(false, 'Authentication required', null, 401);
   }
 
-  // Only farmers can create products
-  if ($user['user_type'] !== 'farmer') {
-    sendResponse(false, 'Only farmers can create products', null, 403);
+  // Determine the seller ID
+  $seller_id = $user['id'];
+  if ($user['user_type'] === 'admin' && !empty($data['seller_id'])) {
+    $seller_id = $data['seller_id'];
+  } elseif ($user['user_type'] !== 'farmer') {
+    sendResponse(false, 'Only farmers or admins can create products', null, 403);
   }
 
   $required_fields = ['name', 'price', 'quantity', 'unit'];
@@ -171,7 +174,7 @@ function handleCreateProduct($data)
         ");
 
     $stmt->execute([
-      $user['id'],
+      $seller_id,
       $data['category_id'] ?? null,
       sanitizeInput($data['name']),
       sanitizeInput($data['description'] ?? ''),

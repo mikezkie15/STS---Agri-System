@@ -1,0 +1,33 @@
+Array
+(
+    [DOCUMENT_ROOT] => C:\xampp\htdocs\agri-market
+    [REMOTE_ADDR] => ::1
+    [REMOTE_PORT] => 60634
+    [SERVER_SOFTWARE] => PHP/8.4.8 (Development Server)
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [SERVER_NAME] => localhost
+    [SERVER_PORT] => 8000
+    [REQUEST_URI] => /api/admin/users.php?count_only=true
+    [REQUEST_METHOD] => GET
+    [SCRIPT_NAME] => /api/admin/users.php
+    [SCRIPT_FILENAME] => C:\xampp\htdocs\agri-market\api\admin\users.php
+    [PHP_SELF] => /api/admin/users.php
+    [QUERY_STRING] => count_only=true
+    [HTTP_HOST] => localhost:8000
+    [HTTP_CONNECTION] => keep-alive
+    [HTTP_SEC_CH_UA_PLATFORM] => "Windows"
+    [HTTP_AUTHORIZATION] => Bearer 2380a2e45f64e4ad357c2a4bed9f2cba0adb611915d24b1bc976ee697866e991
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
+    [HTTP_SEC_CH_UA] => "Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"
+    [HTTP_SEC_CH_UA_MOBILE] => ?0
+    [HTTP_ACCEPT] => */*
+    [HTTP_SEC_FETCH_SITE] => same-origin
+    [HTTP_SEC_FETCH_MODE] => cors
+    [HTTP_SEC_FETCH_DEST] => empty
+    [HTTP_REFERER] => http://localhost:8000/admin-dashboard.html
+    [HTTP_ACCEPT_ENCODING] => gzip, deflate, br, zstd
+    [HTTP_ACCEPT_LANGUAGE] => en-US,en;q=0.9
+    [HTTP_COOKIE] => rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2BpISs2n9kmzYIVftvANejf0VPGhTjf3R1M8pWrAIfjlXFWI6wD7ecLpJ900K%2Funxu2UGCTaDfzuw%3D%3D; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1876wqcOB7ZSmUiRXSKeXbCFUvtBn%2B0aF0%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19av9IJZVSLCnfU3w%2FewpLruTWi3%2BYwL9g%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX18vihf8WEqfXdJBgVhTVVmMWRVJf5ozhQXfmgbmLWEngHlGEXAwG1lSw9DbTFC%2BaQve8VmxSFQUHXh%2FA%2Bd%2FloI2BGYbd0BOw%2BGd0BjgRXiJQnoJ14hDmwp5AO2tN2HzTUDyVwQxKXGi%2BMKq2D4rCkwXiEJkJ6w%2FYDw%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FOz7pUVcyCAT5C1v%2BsNFiUlKhPtRQbIHeYe1a%2FHMpKGfUx0IEQhRciag%2FrikOMzWQUiJvWbmELlphUXC0Eus%2FJ4Qdr2v5l0eXdVea%2F2aeookKnRTY8%2Bw%2BIP4Vwg6bpn7qjmD%2Fxv03bBA%3D%3D; rl_session=RudderEncrypt%3AU2FsdGVkX183BOJnTkw%2FmPJINkm6L0Fry8u3Pp3JJuoXcStR48GAvIrWpQ%2Fq8ZSvGTxo5AtMjs%2Ba%2Br8eKloAis656CKUEeJ9R%2FHlQ6GlP0CTsG2od1TNNij2Qe%2BXbpp2SjznFMmlnT7Og16J72aAbg%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%22386439182ad7a23af00a570a892a7c0ceda5d2f54cb6c216f7e044ced0cc59c5%234c13d1c6-92ac-4683-937e-aaafdfad264f%22%2C%22%24sesid%22%3A%5B1755158150168%2C%220198a793-fc1c-7cb5-883e-d3983334fcb7%22%2C1755158150168%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22http%3A%2F%2Flocalhost%3A56780%2Fhome%2Fworkflows%22%7D%7D
+    [REQUEST_TIME_FLOAT] => 1758278346.4713
+    [REQUEST_TIME] => 1758278346
+)

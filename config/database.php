@@ -102,6 +102,7 @@ function verifyPassword($password, $hash)
 // Helper function to check if user is authenticated
 function checkAuth()
 {
+    file_put_contents('debug.log', print_r($_SERVER, true));
     $token = '';
 
     // Check HTTP_AUTHORIZATION first

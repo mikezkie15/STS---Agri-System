@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Add Product - Barangay Agri-Market</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fas fa-seedling me-2"></i>Agri-Market Admin
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="manage-users.html">Manage Users</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="manage-announcements.html">Manage Announcements</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Add New Product (Admin)</h4>
+          </div>
+          <div class="card-body">
+            <form id="addProductForm">
+              <div class="mb-3">
+                <label for="farmerSelect" class="form-label">Select Farmer *</label>
+                <select class="form-select" id="farmerSelect" name="seller_id" required>
+                  <option value="">Select a farmer</option>
+                  <!-- Farmers will be loaded here -->
+                </select>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="productName" class="form-label">Product Name *</label>
+                  <input type="text" class="form-control" id="productName" name="name" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label for="productCategory" class="form-label">Category *</label>
+                  <select class="form-select" id="productCategory" name="category_id" required>
+                    <option value="">Select category</option>
+                    <option value="1">Vegetables</option>
+                    <option value="2">Fruits</option>
+                    <option value="3">Rice & Grains</option>
+                    <option value="4">Livestock</option>
+                    <option value="5">Seafood</option>
+                    <option value="6">Herbs & Spices</option>
+                    <option value="7">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="productDescription" class="form-label">Description</label>
+                <textarea class="form-control" id="productDescription" name="description" rows="3"
+                  placeholder="Describe the product..."></textarea>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="productPrice" class="form-label">Price (₱) *</label>
+                  <input type="number" class="form-control" id="productPrice" name="price" step="0.01" min="0" required>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <label for="productQuantity" class="form-label">Quantity *</label>
+                  <input type="number" class="form-control" id="productQuantity" name="quantity" step="0.01" min="0"
+                    required>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <label for="productUnit" class="form-label">Unit *</label>
+                  <select class="form-select" id="productUnit" name="unit" required>
+                    <option value="">Select unit</option>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="g">Gram (g)</option>
+                    <option value="lbs">Pound (lbs)</option>
+                    <option value="piece">Piece</option>
+                    <option value="bunch">Bunch</option>
+                    <option value="dozen">Dozen</option>
+                    <option value="box">Box</option>
+                    <option value="sack">Sack</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="productImage" class="form-label">Product Image</label>
+                <input type="file" class="form-control" id="productImage" name="image" accept="image/*">
+                <div class="form-text">Upload a clear photo of the product (optional)</div>
+              </div>
+
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="admin-dashboard.html" class="btn btn-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-success">
+                  <i class="fas fa-save me-1"></i>Add Product for Farmer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Barangay Agri-Market</h5>
+          <p>Connecting farmers and buyers in our community.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p>&copy; 2024 Barangay Agri-Market. All rights reserved.</p>
+          <p>Contact: +63 XXX XXX XXXX</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAdminAuth();
+      loadFarmers();
+      handleFormSubmit();
+    });
+
+    function checkAdminAuth() {
+      const token = localStorage.getItem('auth_token');
+      const userData = JSON.parse(localStorage.getItem('user_data'));
+
+      if (!token || !userData || userData.user_type !== 'admin') {
+        alert('Access Denied');
+        window.location.href = 'login.html';
+      }
+    }
+
+    async function loadFarmers() {
+      try {
+        const response = await fetch('api/admin/users.php?user_type=farmer', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const farmerSelect = document.getElementById('farmerSelect');
+          data.data.data.users.forEach(farmer => {
+            const option = document.createElement('option');
+            option.value = farmer.id;
+            option.textContent = `${farmer.name} (ID: ${farmer.id})`;
+            farmerSelect.appendChild(option);
+          });
+        } else {
+          console.error('Failed to load farmers');
+        }
+      } catch (error) {
+        console.error('Error loading farmers:', error);
+      }
+    }
+
+    function handleFormSubmit() {
+      const form = document.getElementById('addProductForm');
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch('api/products.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            body: JSON.stringify(data)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showSuccess('Product added successfully!', form);
+            setTimeout(() => {
+              window.location.href = 'admin-dashboard.html';
+            }, 2000);
+          } else {
+            showError(result.message, form);
+          }
+        } catch (error) {
+          console.error('Error adding product:', error);
+          showError('Network error. Please try again.', form);
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
