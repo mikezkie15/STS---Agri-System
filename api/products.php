@@ -3,13 +3,13 @@ require_once '../config/database.php';
 
 // Handle product requests
 $method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true);
 
 if ($method === 'GET') {
   handleGetProducts();
 } elseif ($method === 'POST') {
-  handleCreateProduct($input);
+  handleCreateProduct($_POST);
 } elseif ($method === 'PUT') {
+  $input = json_decode(file_get_contents('php://input'), true);
   handleUpdateProduct($input);
 } elseif ($method === 'DELETE') {
   handleDeleteProduct();
@@ -143,26 +143,43 @@ function handleCreateProduct($data)
 
   // Determine the seller ID
   $seller_id = $user['id'];
-  if ($user['user_type'] === 'admin' && !empty($data['seller_id'])) {
-    $seller_id = $data['seller_id'];
-  } elseif ($user['user_type'] !== 'farmer') {
+  if ($user['user_type'] === 'admin' && !empty($_POST['seller_id'])) {
+    $seller_id = $_POST['seller_id'];
+  } elseif ($user['user_type'] !== 'farmer' && $user['user_type'] !== 'admin') {
     sendResponse(false, 'Only farmers or admins can create products', null, 403);
   }
 
   $required_fields = ['name', 'price', 'quantity', 'unit'];
-  $missing_fields = validateRequiredFields($data, $required_fields);
+  $missing_fields = validateRequiredFields($_POST, $required_fields);
 
   if (!empty($missing_fields)) {
     sendResponse(false, 'Missing required fields: ' . implode(', ', $missing_fields), null, 400);
   }
 
   // Validate numeric fields
-  if (!is_numeric($data['price']) || $data['price'] <= 0) {
+  if (!is_numeric($_POST['price']) || $_POST['price'] <= 0) {
     sendResponse(false, 'Price must be a positive number', null, 400);
   }
 
-  if (!is_numeric($data['quantity']) || $data['quantity'] <= 0) {
+  if (!is_numeric($_POST['quantity']) || $_POST['quantity'] <= 0) {
     sendResponse(false, 'Quantity must be a positive number', null, 400);
+  }
+
+  // Handle file upload
+  $image_path = null;
+  if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+    $upload_dir = '../assets/images/products/';
+    if (!is_dir($upload_dir)) {
+      mkdir($upload_dir, 0777, true);
+    }
+    $image_name = uniqid() . '-' . basename($_FILES['image']['name']);
+    $target_file = $upload_dir . $image_name;
+
+    if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+      $image_path = 'assets/images/products/' . $image_name;
+    } else {
+      sendResponse(false, 'Failed to upload image', null, 500);
+    }
   }
 
   $db = getDB();
@@ -175,13 +192,13 @@ function handleCreateProduct($data)
 
     $stmt->execute([
       $seller_id,
-      $data['category_id'] ?? null,
-      sanitizeInput($data['name']),
-      sanitizeInput($data['description'] ?? ''),
-      $data['price'],
-      $data['quantity'],
-      sanitizeInput($data['unit']),
-      $data['image'] ?? null,
+      $_POST['category_id'] ?? null,
+      sanitizeInput($_POST['name']),
+      sanitizeInput($_POST['description'] ?? ''),
+      $_POST['price'],
+      $_POST['quantity'],
+      sanitizeInput($_POST['unit']),
+      $image_path,
       1
     ]);
 

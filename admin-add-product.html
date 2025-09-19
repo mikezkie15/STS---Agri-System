@@ -194,16 +194,14 @@
         e.preventDefault();
 
         const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
 
         try {
           const response = await fetch('api/products.php', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
               'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             },
-            body: JSON.stringify(data)
+            body: formData
           });
 
           const result = await response.json();

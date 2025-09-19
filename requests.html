@@ -50,7 +50,7 @@
         <p class="text-muted mb-4">See what buyers are looking for and connect with them directly</p>
 
         <!-- Add Request Button -->
-        <div class="text-end mb-4">
+        <div class="text-end mb-4" id="addRequestButtonContainer">
           <button class="btn btn-success" onclick="addRequest()">
             <i class="fas fa-plus me-2"></i>Post a Request
           </button>
@@ -153,7 +153,6 @@
   <script src="assets/js/main.js"></script>
   <script>
     let allRequests = [];
-    let currentUser = null;
 
     // Load requests on page load
     document.addEventListener('DOMContentLoaded', function () {
@@ -164,6 +163,7 @@
     async function checkAuthAndLoadRequests() {
       const token = localStorage.getItem('auth_token');
       const userData = localStorage.getItem('user_data');
+      const addRequestButtonContainer = document.getElementById('addRequestButtonContainer');
 
       if (token && userData) {
         try {
@@ -181,18 +181,25 @@
           if (data.success) {
             currentUser = data.user;
             updateNavigation();
+            if (currentUser.user_type !== 'buyer') {
+              addRequestButtonContainer.style.display = 'none';
+            }
           } else {
             // Token is invalid, clear storage
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user_data');
             currentUser = null;
+            addRequestButtonContainer.style.display = 'none';
           }
         } catch (error) {
           console.error('Error validating token:', error);
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user_data');
           currentUser = null;
+          addRequestButtonContainer.style.display = 'none';
         }
+      } else {
+        addRequestButtonContainer.style.display = 'none';
       }
 
       // Load requests regardless of auth status
@@ -328,22 +335,6 @@
         hour: '2-digit',
         minute: '2-digit'
       });
-    }
-
-    // Add request function
-    function addRequest() {
-      alert('addRequest function called');
-      // Check if user is logged in
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        alert('Please login to post a request');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      // Show modal
-      const modal = new bootstrap.Modal(document.getElementById('addRequestModal'));
-      modal.show();
     }
 
     // Handle add request form submission

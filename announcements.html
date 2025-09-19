@@ -103,135 +103,27 @@
   <script src="assets/js/main.js"></script>
   <script>
     let allAnnouncements = [];
-    let currentUser = null;
 
     // Load announcements on page load
     document.addEventListener('DOMContentLoaded', function () {
-      checkAuthAndLoadAnnouncements();
+      checkAuthStatus();
+      loadAnnouncements();
 
       // Add event listener for filter
       document.getElementById('importantOnly').addEventListener('change', filterAnnouncements);
     });
 
-    // Check authentication and load announcements
-    async function checkAuthAndLoadAnnouncements() {
-      const token = localStorage.getItem('auth_token');
-      const userData = localStorage.getItem('user_data');
-
-      if (token && userData) {
-        try {
-          currentUser = JSON.parse(userData);
-          // Validate token with server
-          const response = await fetch('api/auth.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ action: 'validate', token: token })
-          });
-
-          const data = await response.json();
-          if (data.success) {
-            currentUser = data.user;
-            updateNavigation();
-          } else {
-            // Token is invalid, clear storage
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user_data');
-            currentUser = null;
-          }
-        } catch (error) {
-          console.error('Error validating token:', error);
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user_data');
-          currentUser = null;
-        }
-      }
-
-      // Load announcements regardless of auth status
-      console.log('Loading announcements...');
-      loadAnnouncements();
-    }
-
-    // Update navigation based on user status
-    function updateNavigation() {
-      const nav = document.querySelector("#navbarNav ul");
-      if (!nav || !currentUser) return;
-
-      // Remove login link and add user-specific links
-      const loginLink = nav.querySelector('a[href="login.html"]');
-      if (loginLink) {
-        loginLink.parentElement.remove();
-      }
-
-      // Add user menu
-      const userMenu = document.createElement("li");
-      userMenu.className = "nav-item dropdown";
-      userMenu.innerHTML = `
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-          <i class="fas fa-user me-1"></i>${currentUser.name}
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="dashboard.html">Dashboard</a></li>
-          <li><a class="dropdown-item" href="profile.html">Profile</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
-        </ul>
-      `;
-      nav.appendChild(userMenu);
-    }
-
-    // Logout function
-    function logout() {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_data');
-      currentUser = null;
-      location.reload();
-    }
-
-    // Load announcements from API
-    async function loadAnnouncements() {
-      console.log('loadAnnouncements called');
-      showLoading();
-
-      try {
-        console.log('Fetching announcements from API...');
-        const response = await fetch('api/announcements.php');
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-
-        const data = await response.json();
-        console.log('API response:', data);
-
-        if (data.success) {
-          allAnnouncements = data.data.announcements;
-          console.log('Announcements loaded:', allAnnouncements);
-          console.log('Number of announcements:', allAnnouncements.length);
-          displayAnnouncements(allAnnouncements);
-        } else {
-          console.error('API returned error:', data.message);
-          showError('Failed to load announcements: ' + data.message, document.getElementById('announcementsList'));
-        }
-      } catch (error) {
-        console.error('Error loading announcements:', error);
-        showError('Network error. Please check your connection: ' + error.message, document.getElementById('announcementsList'));
-      }
-    }
-
     // Display announcements
     function displayAnnouncements(announcements) {
-      console.log('displayAnnouncements called with:', announcements);
       const container = document.getElementById('announcementsList');
       const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
 
       if (announcements.length === 0) {
-        console.log('No announcements to display');
         container.innerHTML = '';
         noAnnouncementsMessage.style.display = 'block';
         return;
       }
 
-      console.log('Displaying', announcements.length, 'announcements');
       noAnnouncementsMessage.style.display = 'none';
 
       container.innerHTML = announcements.map(announcement => `

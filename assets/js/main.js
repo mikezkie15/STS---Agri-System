@@ -92,6 +92,7 @@ async function loadRecentAnnouncements() {
   try {
     const response = await fetch("api/announcements.php?limit=3");
     const data = await response.json();
+    console.log(data);
 
     if (data.success) {
       announcements = data.data.announcements;
@@ -145,6 +146,7 @@ function checkAuthStatus() {
     // Validate token with server
     validateToken(token);
   }
+  updateNavigation();
 }
 
 // Validate authentication token
@@ -174,29 +176,39 @@ async function validateToken(token) {
 // Update navigation based on user status
 function updateNavigation() {
   const nav = document.querySelector("#navbarNav ul");
-  if (!nav || !currentUser) return;
+  if (!nav) return;
 
-  // Remove login link and add user-specific links
   const loginLink = nav.querySelector('a[href="login.html"]');
-  if (loginLink) {
-    loginLink.parentElement.remove();
-  }
+  if (currentUser) {
+    // Remove login link
+    if (loginLink) {
+      loginLink.parentElement.remove();
+    }
 
-  // Add user menu
-  const userMenu = document.createElement("li");
-  userMenu.className = "nav-item dropdown";
-  userMenu.innerHTML = `
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-            <i class="fas fa-user me-1"></i>${currentUser.name}
-        </a>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="dashboard.html">Dashboard</a></li>
-            <li><a class="dropdown-item" href="profile.html">Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
-        </ul>
-    `;
-  nav.appendChild(userMenu);
+    // Add user menu
+    const userMenu = document.createElement("li");
+    userMenu.className = "nav-item dropdown";
+    userMenu.innerHTML = `
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user me-1"></i>${currentUser.name}
+          </a>
+          <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="dashboard.html">Dashboard</a></li>
+              <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+          </ul>
+      `;
+    nav.appendChild(userMenu);
+  } else {
+    // Show login link if it doesn't exist
+    if (!loginLink) {
+      const loginItem = document.createElement("li");
+      loginItem.className = "nav-item";
+      loginItem.innerHTML = '<a class="nav-link" href="login.html">Login</a>';
+      nav.appendChild(loginItem);
+    }
+  }
 }
 
 // Logout function
@@ -345,5 +357,40 @@ function sortProducts(products, sortBy) {
       );
     default:
       return products;
+  }
+}
+
+// Add request function
+function addRequest() {
+  // Check if user is logged in
+  const token = localStorage.getItem("auth_token");
+  if (!token) {
+    alert("Please login to post a request");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById("addRequestModal"));
+  modal.show();
+}
+
+// Load announcements from API
+async function loadAnnouncements() {
+  showLoading(document.getElementById('announcementsList'));
+
+  try {
+    const response = await fetch('api/announcements.php');
+    const data = await response.json();
+
+    if (data.success) {
+      allAnnouncements = data.data.announcements;
+      displayAnnouncements(allAnnouncements);
+    } else {
+      showError('Failed to load announcements', document.getElementById('announcementsList'));
+    }
+  } catch (error) {
+    console.error('Error loading announcements:', error);
+    showError('Network error. Please check your connection.', document.getElementById('announcementsList'));
   }
 }
