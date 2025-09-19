@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages - Barangay Agri-Market</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet">
+  <style>
+    .conversations-list {
+      height: 70vh;
+      overflow-y: auto;
+    }
+
+    .message-container {
+      height: 55vh;
+      overflow-y: auto;
+    }
+
+    .message {
+      padding: 10px 15px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      max-width: 80%;
+    }
+
+    .message.sent {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+    }
+
+    .message.received {
+      background-color: #f1f0f0;
+      align-self: flex-start;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fas fa-seedling me-2"></i>Agri-Market
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="products.html">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="requests.html">Requests</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="announcements.html">Announcements</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class_="container my-5">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Conversations</h5>
+          </div>
+          <div class="card-body conversations-list p-0" id="conversationsList">
+            <!-- Conversations will be loaded here -->
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0" id="conversationHeader">Select a conversation</h5>
+          </div>
+          <div class="card-body">
+            <div class="message-container d-flex flex-column" id="messageContainer">
+              <!-- Messages will be loaded here -->
+            </div>
+            <div class="mt-3">
+              <form id="sendMessageForm">
+                <div class="input-group">
+                  <input type="text" class="form-control" id="messageInput" placeholder="Type your message..." disabled>
+                  <button class="btn btn-success" type="submit" id="sendMessageBtn" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Barangay Agri-Market</h5>
+          <p>Connecting farmers and buyers in our community.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p>&copy; 2024 Barangay Agri-Market. All rights reserved.</p>
+          <p>Contact: +63 XXX XXX XXXX</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    let conversations = [];
+    let selectedConversation = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAuthAndLoadMessages();
+    });
+
+    async function checkAuthAndLoadMessages() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Fetch conversations
+      try {
+        const response = await fetch('api/messages.php', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          conversations = groupMessagesIntoConversations(data.data.messages);
+          displayConversations(conversations);
+
+          // Check for recipient in URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const recipientId = urlParams.get('recipient_id');
+          const recipientName = urlParams.get('recipient_name');
+
+          if (recipientId && recipientName) {
+            let conversation = conversations.find(c => c.otherParty.id == recipientId);
+            if (!conversation) {
+              conversation = {
+                otherParty: {
+                  id: recipientId,
+                  name: recipientName
+                },
+                messages: []
+              };
+              conversations.push(conversation);
+              displayConversations(conversations);
+            }
+            selectConversation(parseInt(recipientId));
+          }
+
+        } else {
+          showError('Failed to load messages', document.getElementById('conversationsList'));
+        }
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        showError('Network error. Please check your connection.', document.getElementById('conversationsList'));
+      }
+    }
+
+    function groupMessagesIntoConversations(messages) {
+      const conversations = {};
+      messages.forEach(message => {
+        const otherPartyId = message.sender_id === currentUser.id ? message.receiver_id : message.sender_id;
+        if (!conversations[otherPartyId]) {
+          conversations[otherPartyId] = {
+            otherParty: {
+              id: otherPartyId,
+              name: message.sender_id === currentUser.id ? message.receiver_name : message.sender_name
+            },
+            messages: []
+          };
+        }
+        conversations[otherPartyId].messages.push(message);
+      });
+      return Object.values(conversations);
+    }
+
+    function displayConversations(conversations) {
+      const container = document.getElementById('conversationsList');
+      if (conversations.length === 0) {
+        container.innerHTML = '<p class="text-center p-3">No conversations yet.</p>';
+        return;
+      }
+
+      container.innerHTML = conversations.map(conv => `
+        <div class="list-group-item list-group-item-action" onclick="selectConversation(${conv.otherParty.id})">
+          <div class="d-flex w-100 justify-content-between">
+            <h6 class="mb-1">${conv.otherParty.name}</h6>
+            <small>${formatDate(conv.messages[0].created_at)}</small>
+          </div>
+          <p class="mb-1">${conv.messages[0].message.substring(0, 30)}...</p>
+        </div>
+      `).join('');
+    }
+
+    function selectConversation(otherPartyId) {
+      selectedConversation = conversations.find(c => c.otherParty.id === otherPartyId);
+      document.getElementById('conversationHeader').textContent = `Conversation with ${selectedConversation.otherParty.name}`;
+      document.getElementById('messageInput').disabled = false;
+      document.getElementById('sendMessageBtn').disabled = false;
+
+      displayMessages(selectedConversation.messages);
+    }
+
+    function displayMessages(messages) {
+      const container = document.getElementById('messageContainer');
+      container.innerHTML = messages.map(msg => `
+        <div class="message ${msg.sender_id === currentUser.id ? 'sent' : 'received'}">
+          <p class="mb-0">${msg.message}</p>
+          <small class="text-muted">${formatDate(msg.created_at)}</small>
+        </div>
+      `).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    document.getElementById('sendMessageForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const messageInput = document.getElementById('messageInput');
+      const message = messageInput.value.trim();
+
+      if (!message || !selectedConversation) {
+        return;
+      }
+
+      const data = {
+        receiver_id: selectedConversation.otherParty.id,
+        message: message
+      };
+
+      try {
+        const response = await fetch('api/messages.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          selectedConversation.messages.push(result.data.message);
+          displayMessages(selectedConversation.messages);
+          messageInput.value = '';
+        } else {
+          alert('Failed to send message: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Network error. Please check your connection.');
+      }
+    });
+  </script>
+</body>
+
+</html>

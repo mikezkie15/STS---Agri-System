@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave a Rating - Barangay Agri-Market</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fas fa-seedling me-2"></i>Agri-Market
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="products.html">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="requests.html">Requests</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="announcements.html">Announcements</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Leave a Rating</h5>
+          </div>
+          <div class="card-body">
+            <form id="leaveRatingForm">
+              <div class="mb-3">
+                <label class="form-label">How was your transaction?</label>
+                <div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="rating" id="satisfied" value="satisfied" required>
+                    <label class="form-check-label" for="satisfied">
+                      <i class="fas fa-thumbs-up text-success"></i> Satisfied
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="rating" id="not_satisfied" value="not_satisfied" required>
+                    <label class="form-check-label" for="not_satisfied">
+                      <i class="fas fa-thumbs-down text-danger"></i> Not Satisfied
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="comment" class="form-label">Add a comment</label>
+                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-success">Submit Rating</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Barangay Agri-Market</h5>
+          <p>Connecting farmers and buyers in our community.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p>&copy; 2024 Barangay Agri-Market. All rights reserved.</p>
+          <p>Contact: +63 XXX XXX XXXX</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAuth();
+      handleRatingFormSubmit();
+    });
+
+    function checkAuth() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = 'login.html';
+      }
+    }
+
+    function handleRatingFormSubmit() {
+      const form = document.getElementById('leaveRatingForm');
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const ratedId = urlParams.get('rated_id');
+
+        if (!ratedId) {
+          showError('No rated user ID provided.', form);
+          return;
+        }
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        data.rated_id = ratedId;
+
+        try {
+          const response = await fetch('api/ratings.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            body: JSON.stringify(data)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showSuccess('Rating submitted successfully!', form);
+            setTimeout(() => {
+              window.location.href = `seller-profile.html?id=${ratedId}`;
+            }, 2000);
+          } else {
+            showError(result.message, form);
+          }
+        } catch (error) {
+          console.error('Error submitting rating:', error);
+          showError('Network error. Please check your connection.', form);
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

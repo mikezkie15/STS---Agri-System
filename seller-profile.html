@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Profile - Barangay Agri-Market</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fas fa-seedling me-2"></i>Agri-Market
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="products.html">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="requests.html">Requests</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="announcements.html">Announcements</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container my-5">
+    <div id="sellerProfile">
+      <!-- Seller profile will be loaded here -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Barangay Agri-Market</h5>
+          <p>Connecting farmers and buyers in our community.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p>&copy; 2024 Barangay Agri-Market. All rights reserved.</p>
+          <p>Contact: +63 XXX XXX XXXX</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      loadSellerProfile();
+    });
+
+    async function loadSellerProfile() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sellerId = urlParams.get('id');
+
+      if (!sellerId) {
+        showError('No seller ID provided.', document.getElementById('sellerProfile'));
+        return;
+      }
+
+      showLoading(document.getElementById('sellerProfile'));
+
+      try {
+        // Fetch seller details and ratings concurrently
+        const [sellerResponse, ratingsResponse] = await Promise.all([
+          fetch(`api/admin/users.php?id=${sellerId}`),
+          fetch(`api/ratings.php?rated_id=${sellerId}`)
+        ]);
+
+        const sellerData = await sellerResponse.json();
+        const ratingsData = await ratingsResponse.json();
+
+        if (sellerData.success && ratingsData.success) {
+          displaySellerProfile(sellerData.data.user, ratingsData.data.ratings);
+        } else {
+          showError('Failed to load seller profile.', document.getElementById('sellerProfile'));
+        }
+      } catch (error) {
+        console.error('Error loading seller profile:', error);
+        showError('Network error. Please check your connection.', document.getElementById('sellerProfile'));
+      }
+    }
+
+    function displaySellerProfile(seller, ratings) {
+      const container = document.getElementById('sellerProfile');
+
+      const averageRating = calculateAverageRating(ratings);
+
+      container.innerHTML = `
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card text-center">
+              <div class="card-body">
+                <i class="fas fa-user-circle fa-5x mb-3"></i>
+                <h4 class="card-title">${seller.name}</h4>
+                <p class="text-muted">${seller.user_type}</p>
+                ${seller.is_verified ? '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Verified Seller</span>' : ''}
+                <hr>
+                <p class="mb-0">Member since ${formatDate(seller.created_at)}</p>
+              </div>
+            </div>
+            <div class="d-grid gap-2 mt-3">
+              <a href="leave-rating.html?rated_id=${seller.id}" class="btn btn-success">
+                <i class="fas fa-star me-2"></i>Leave a Rating
+              </a>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Seller Ratings</h5>
+              </div>
+              <div class="card-body">
+                <div class="text-center mb-4">
+                  <h3>${averageRating.toFixed(1)} / 5.0</h3>
+                  <div>
+                    ${renderStars(averageRating)}
+                  </div>
+                  <p class="text-muted">Based on ${ratings.length} ratings</p>
+                </div>
+                <hr>
+                <div id="ratingsList">
+                  ${ratings.map(renderRating).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function calculateAverageRating(ratings) {
+        if (ratings.length === 0) {
+            return 0;
+        }
+
+        const total = ratings.reduce((acc, rating) => {
+            return acc + (rating.rating === 'satisfied' ? 5 : 1);
+        }, 0);
+
+        return total / ratings.length;
+    }
+
+    function renderStars(rating) {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars += '<i class="fas fa-star text-warning"></i>';
+        } else if (i - 0.5 <= rating) {
+          stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+        } else {
+          stars += '<i class="far fa-star text-warning"></i>';
+        }
+      }
+      return stars;
+    }
+
+    function renderRating(rating) {
+      return `
+        <div class="d-flex mb-3">
+          <div class="flex-shrink-0">
+            <i class="fas fa-user-circle fa-2x"></i>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-0">${rating.rater_name}</h6>
+              <small class="text-muted">${formatDate(rating.created_at)}</small>
+            </div>
+            <div>
+              ${renderStars(rating.rating === 'satisfied' ? 5 : 1)}
+            </div>
+            <p class="mb-0">${rating.comment}</p>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+
+</html>

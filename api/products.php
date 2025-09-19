@@ -22,12 +22,33 @@ function handleGetProducts()
   $db = getDB();
 
   // Get query parameters
+  $product_id = $_GET['id'] ?? '';
   $limit = $_GET['limit'] ?? 20;
   $offset = $_GET['offset'] ?? 0;
   $category = $_GET['category'] ?? '';
   $search = $_GET['search'] ?? '';
   $seller_id = $_GET['seller_id'] ?? '';
   $count_only = $_GET['count_only'] ?? false;
+
+  if (!empty($product_id)) {
+    $query = "
+            SELECT p.*, u.name as seller_name, u.is_verified, c.name as category_name
+            FROM products p
+            LEFT JOIN users u ON p.seller_id = u.id
+            LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.id = ? AND p.is_available = 1
+        ";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$product_id]);
+    $product = $stmt->fetch();
+
+    if ($product) {
+      sendResponse(true, 'Product retrieved successfully', ['product' => $product]);
+    } else {
+      sendResponse(false, 'Product not found', null, 404);
+    }
+    return;
+  }
 
   if ($count_only) {
     $query = "SELECT COUNT(*) as count FROM products WHERE is_available = 1";
